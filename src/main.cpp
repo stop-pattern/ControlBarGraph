@@ -1,6 +1,13 @@
 #include <Arduino.h>
 #include <driver/ledc.h>
 
+// mode select
+#define SPEED
+// - SPEED
+//    表示する速度から周波数を計算して出力
+// - FREQ
+//    周波数を直接指定
+
 constexpr uint8_t pin = 27;
 
 // 文字列がintに変換可能か
@@ -31,32 +38,34 @@ void setup() {
     
     pinMode(pin, OUTPUT);
     ledcAttachPin(pin, LEDC_CHANNEL_0);
-    speedWrite(100);
+    
+#ifdef SPEED
+        speedWrite(100);
+#elif defined FREQ
+        pfmWrite(1000);
+#else
+        Serial.println("mode not set");
+#endif
 }
 
 // 速度指定
 void loop() {
     if(Serial.available()){
         String str = Serial.readStringUntil('\n');
+#ifdef SPEED
         speedWrite(str.toInt());
-    }
-    delay(5);
-}
-
-/*
-// 周波数指定
-void loop() {
-    if(Serial.available()){
-        String str = Serial.readStringUntil('\n');
-        uint32_t speed = str.toInt();
-        if (speed == 0) {
+#elif defined FREQ
+        uint32_t freq = str.toInt();
+        if (freq == 0) {
             digitalWrite(pin, LOW);
             Serial.println("set Low");
         }
         else{
-            speedWrite(speed);
+            prmWrite(freq);
         }
+#else
+        Serial.println("input: " + str);
+#endif
     }
     delay(5);
 }
-*/
