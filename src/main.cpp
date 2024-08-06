@@ -16,6 +16,13 @@ bool isInt(String str) {
 void pfmWrite(uint32_t freq) {
     ledcSetup(LEDC_CHANNEL_0, freq, LEDC_TIMER_12_BIT);
     ledcWrite(LEDC_CHANNEL_0, 2048);// 50%
+    Serial.printf("set freq: %d\n", freq);
+}
+
+// 速度で周波数を指定
+void speedWrite(int16_t speed) {
+    pfmWrite(speed * 6.472 + 5.070);
+    Serial.printf("set speed: %d\n", speed);
 }
 
 void setup() {
@@ -23,22 +30,33 @@ void setup() {
     Serial.println("setup");
     
     pinMode(pin, OUTPUT);
-    
     ledcAttachPin(pin, LEDC_CHANNEL_0);
-    pfmWrite(1000);
+    speedWrite(100);
 }
 
+// 速度指定
 void loop() {
     if(Serial.available()){
         String str = Serial.readStringUntil('\n');
-        uint32_t freq = str.toInt();
-        if (freq == 0) {
-            digitalWrite(pin, LOW);
-        }
-        else{
-            pfmWrite(freq);
-        }
-        Serial.printf("set freq: %d\n", freq);
+        speedWrite(str.toInt());
     }
     delay(5);
 }
+
+/*
+// 周波数指定
+void loop() {
+    if(Serial.available()){
+        String str = Serial.readStringUntil('\n');
+        uint32_t speed = str.toInt();
+        if (speed == 0) {
+            digitalWrite(pin, LOW);
+            Serial.println("set Low");
+        }
+        else{
+            speedWrite(speed);
+        }
+    }
+    delay(5);
+}
+*/
