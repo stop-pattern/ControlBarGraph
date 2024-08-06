@@ -38,8 +38,7 @@ void loop() {
         else{
             pfmWrite(freq);
         }
-        Serial.print("set freq: ");
-        Serial.println(freq);
+        Serial.printf("set freq: %d\n", freq);
     }
     delay(5);
 }
