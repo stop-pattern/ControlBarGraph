@@ -16,15 +16,6 @@ const IPAddress ip(192, 168, 0, 1);
 const IPAddress subnet(255, 255, 255, 0);
 
 
-// 文字列がintに変換可能か
-bool isInt(String str) {
-    for (auto &&i : str) {
-        // if (!isdigit(i)) return false;
-        Serial.print(isdigit(i));
-    }
-    return true;
-}
-
 // ledcでPFM
 void pfmWrite(uint32_t freq) {
     ledcSetup(LEDC_CHANNEL_0, freq, LEDC_TIMER_12_BIT);
