@@ -1,4 +1,5 @@
 #include <Arduino.h>
+#include <WiFi.h>
 #include <driver/ledc.h>
 
 // mode select
@@ -9,6 +10,11 @@
 //    周波数を直接指定
 
 constexpr uint8_t pin = 27;
+constexpr char* ssid = "BarGraqh";
+constexpr char* password = "pass";
+constexpr IPAddress ip(192, 168, 0, 1);
+constexpr IPAddress subnet( 255, 255, 255, 0);
+
 
 // 文字列がintに変換可能か
 bool isInt(String str) {
@@ -35,6 +41,12 @@ void speedWrite(int16_t speed) {
 void setup() {
     Serial.begin(115200);
     Serial.println("setup");
+
+    WiFi.mode(WIFI_MODE_AP);
+    WiFi.softAP(ssid, password);
+    while(true)
+        delay(1);
+    WiFi.softAPConfig(ip, ip, subnet);
     
     pinMode(pin, OUTPUT);
     ledcAttachPin(pin, LEDC_CHANNEL_0);
