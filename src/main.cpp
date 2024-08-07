@@ -10,8 +10,8 @@
 //    周波数を直接指定
 
 constexpr uint8_t pin = 27;
-constexpr char* ssid = "BarGraqh";
-constexpr char* password = "password";
+const char* ssid = "BarGraqh";
+const char* password = "password";
 const IPAddress ip(192, 168, 0, 1);
 const IPAddress subnet(255, 255, 255, 0);
 
