@@ -14,10 +14,11 @@
 //    周波数を直接指定
 
 constexpr uint8_t pin = 27;
-const char* hostname = "BarGraqh";
+const char* ssid = "BarGraqh";
 const char* password = "password";
 const IPAddress ip(192, 168, 0, 1);
 const IPAddress subnet(255, 255, 255, 0);
+const char* hostname = "esp32";
 
 #ifdef SERVER
 WebServer Server(80);
@@ -44,14 +45,13 @@ void setup() {
 
     // wifi
     WiFi.mode(WIFI_MODE_AP);
-    WiFi.softAP(hostname, password);
+    WiFi.softAP(ssid, password);
     delay(100);
     WiFi.softAPConfig(ip, ip, subnet);
 
     // mdns   
-    if (!MDNS.begin(hostname)) {
-        log_e("Error setting up MDNS responder!");
-        esp_restart();
+    while (!MDNS.begin(hostname)) {
+        delay(10);
     }
 
     // output
