@@ -36,8 +36,7 @@ void setup() {
 
     WiFi.mode(WIFI_MODE_AP);
     WiFi.softAP(ssid, password);
-    while(true)
-        delay(1);
+    delay(100);
     WiFi.softAPConfig(ip, ip, subnet);
     
     pinMode(pin, OUTPUT);
