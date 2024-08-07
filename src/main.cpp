@@ -1,5 +1,6 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <ESPmDNS.h>
 #include <WebServer.h>
 #include <driver/ledc.h>
 
@@ -13,7 +14,7 @@
 //    周波数を直接指定
 
 constexpr uint8_t pin = 27;
-const char* ssid = "BarGraqh";
+const char* hostname = "BarGraqh";
 const char* password = "password";
 const IPAddress ip(192, 168, 0, 1);
 const IPAddress subnet(255, 255, 255, 0);
@@ -41,15 +42,21 @@ void setup() {
     log_d("setup");
 
     WiFi.mode(WIFI_MODE_AP);
-    WiFi.softAP(ssid, password);
+    WiFi.softAP(hostname, password);
     delay(100);
     WiFi.softAPConfig(ip, ip, subnet);
-    
+
+    if (!MDNS.begin(hostname)) {
+        log_e("Error setting up MDNS responder!");
+        esp_restart();
+    }
+
     pinMode(pin, OUTPUT);
     ledcAttachPin(pin, LEDC_CHANNEL_0);
 
 #if defined SERVER
     Server.begin();
+    MDNS.addService("http", "tcp", 80);
 #elif defined SPEED
     speedWrite(100);
 #elif defined FREQ
