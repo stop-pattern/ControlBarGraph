@@ -1,9 +1,12 @@
 #include <Arduino.h>
 #include <WiFi.h>
+#include <WebServer.h>
 #include <driver/ledc.h>
 
 // mode select
-#define SPEED
+#define SERVER
+// - SERVER
+//    サーバーから表示する速度を受け周波数を計算して出力
 // - SPEED
 //    表示する速度から周波数を計算して出力
 // - FREQ
@@ -15,6 +18,9 @@ const char* password = "password";
 const IPAddress ip(192, 168, 0, 1);
 const IPAddress subnet(255, 255, 255, 0);
 
+#ifdef SERVER
+WebServer Server(80);
+#endif
 
 // ledcでPFM
 void pfmWrite(uint32_t freq) {
@@ -41,21 +47,26 @@ void setup() {
     
     pinMode(pin, OUTPUT);
     ledcAttachPin(pin, LEDC_CHANNEL_0);
-    
-#ifdef SPEED
-        speedWrite(100);
+
+#if defined SERVER
+    Server.begin();
+#elif defined SPEED
+    speedWrite(100);
 #elif defined FREQ
-        pfmWrite(1000);
+    pfmWrite(1000);
 #else
-        log_d("mode not set");
+    log_d("mode not set");
 #endif
 }
 
 // 速度指定
 void loop() {
+#if defined SERVER
+    Server.handleClient();
+#else
     if(Serial.available()){
         String str = Serial.readStringUntil('\n');
-#ifdef SPEED
+#if defined SPEED
         speedWrite(str.toInt());
 #elif defined FREQ
         uint32_t freq = str.toInt();
@@ -70,5 +81,6 @@ void loop() {
         log_d("input: %s", str.c_str());
 #endif
     }
+#endif
     delay(5);
 }
