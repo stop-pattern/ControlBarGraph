@@ -48,15 +48,18 @@ void setup() {
     WiFi.softAP(ssid, password);
     delay(100);
     WiFi.softAPConfig(ip, ip, subnet);
+    log_d("wifi end");
 
     // mdns   
     while (!MDNS.begin(hostname)) {
         delay(10);
     }
+    log_d("mdns end");
 
     // output
     pinMode(pin, OUTPUT);
     ledcAttachPin(pin, LEDC_CHANNEL_0);
+    log_d("output end");
 
     // mode options
 #if defined SERVER
@@ -69,6 +72,7 @@ void setup() {
 #else
     log_d("mode not set");
 #endif
+    log_d("setup end");
 }
 
 void loop() {
