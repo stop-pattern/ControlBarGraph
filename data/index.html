@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>ESP32 Web Server</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="icon" href="data:,">
+    <link rel="stylesheet" type="text/css" href="style.css">
+</head>
+
+<body>
+    <h1>ESP32 Web Server</h1>
+    <p>GPIO state: <strong> %STATE%</strong></p>
+    <p><a href="/on"><button class="button">On</button></a></p>
+    <p><a href="/off"><button class="button button2">Off</button></a></p>
+
+
+    <h1>Asynchronous Server</h1>
+    <p>
+    <table>
+        <tr>
+            <th>ELEMENT</th>
+            <th>VALUE</th>
+        </tr>
+        <tr>
+            <td>Frequency</td>
+            <td><span id="frequency" class="value">%FREQUENCY%</span>
+        <tr>
+            <td>Speed</td>
+            <td><span id="speed" class="value">%SPEED%</span>
+            </td>
+        </tr>
+    </table>
+    </p>
+
+    <p>Speedometer settings</p>
+    <div>
+        <input type="range" id="speed" name="speed" min="0" max="180" />
+        <label for="speed">Speed</label>
+</body>
+
+<script>
+    var getFrequency = function () {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("frequency").innerHTML = this.responseText;
+            }
+        };
+        xhr.open("GET", "/frequency", true);
+        xhr.send(null);
+    }
+    var getSpeed = function () {
+        var xhr = new XMLHttpRequest();
+        xhr.onreadystatechange = function () {
+            if (this.readyState == 4 && this.status == 200) {
+                document.getElementById("speed").innerHTML = this.responseText;
+            }
+        };
+        xhr.open("GET", "/speed", true);
+        xhr.send(null);
+    }
+
+    setInterval(getFrequency, 1000);
+    setInterval(getSpeed, 1000);
+</script>
+
+</html>

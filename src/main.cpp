@@ -3,6 +3,8 @@
 #include <ESPmDNS.h>
 #include <WebServer.h>
 #include <driver/ledc.h>
+#include "FS.h"
+#include "SPIFFS.h"
 
 // mode select
 #define SERVER
@@ -21,7 +23,7 @@ const IPAddress subnet(255, 255, 255, 0);
 const char* hostname = "esp32";
 
 #ifdef SERVER
-WebServer Server(80);
+WebServer server(80);
 #endif
 
 // ledcでPFM
@@ -35,6 +37,14 @@ void pfmWrite(uint32_t freq) {
 void speedWrite(int16_t speed) {
     pfmWrite(speed * 6.472 + 5.070);
     log_d("set speed: %d", speed);
+}
+
+// 404
+void handleNotFound() {
+    if (! handleFileRead(server.uri())) {
+        log_e("404 not found");
+        server.send(404, "text/plain", "File not found");
+    }
 }
 
 void setup() {
@@ -63,7 +73,18 @@ void setup() {
 
     // mode options
 #if defined SERVER
-    Server.begin();
+    if(!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)){
+        log_e("SPIFFS Mount Failed");
+        esp_reboot();
+    }
+    SPIFFS.begin();
+    server.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico"); //配置せずdefault
+    server.serveStatic("/Chart.min.js", SPIFFS, "/Chart.min.js");
+    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
+        request->send(SPIFFS, "/index.html", String(), false, processor);
+    });
+    server.onNotFound(handleNotFound);
+    server.begin();
     MDNS.addService("server", "tcp", 80);
 #elif defined SPEED
     speedWrite(100);
@@ -77,7 +98,7 @@ void setup() {
 
 void loop() {
 #if defined SERVER
-    Server.handleClient();
+    server.handleClient();
 #else
     if(Serial.available()){
         String str = Serial.readStringUntil('\n');
