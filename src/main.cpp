@@ -37,26 +37,31 @@ void speedWrite(int16_t speed) {
 }
 
 void setup() {
+    // serial
     Serial.begin(115200);
     Serial.println();
     log_d("setup");
 
+    // wifi
     WiFi.mode(WIFI_MODE_AP);
     WiFi.softAP(hostname, password);
     delay(100);
     WiFi.softAPConfig(ip, ip, subnet);
 
+    // mdns   
     if (!MDNS.begin(hostname)) {
         log_e("Error setting up MDNS responder!");
         esp_restart();
     }
 
+    // output
     pinMode(pin, OUTPUT);
     ledcAttachPin(pin, LEDC_CHANNEL_0);
 
+    // mode options
 #if defined SERVER
     Server.begin();
-    MDNS.addService("http", "tcp", 80);
+    MDNS.addService("server", "tcp", 80);
 #elif defined SPEED
     speedWrite(100);
 #elif defined FREQ
@@ -66,7 +71,6 @@ void setup() {
 #endif
 }
 
-// 速度指定
 void loop() {
 #if defined SERVER
     Server.handleClient();
