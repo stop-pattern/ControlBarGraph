@@ -12,8 +12,8 @@
 constexpr uint8_t pin = 27;
 constexpr char* ssid = "BarGraqh";
 constexpr char* password = "pass";
-constexpr IPAddress ip(192, 168, 0, 1);
-constexpr IPAddress subnet( 255, 255, 255, 0);
+const IPAddress ip(192, 168, 0, 1);
+const IPAddress subnet(255, 255, 255, 0);
 
 
 // 文字列がintに変換可能か
