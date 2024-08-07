@@ -29,18 +29,19 @@ bool isInt(String str) {
 void pfmWrite(uint32_t freq) {
     ledcSetup(LEDC_CHANNEL_0, freq, LEDC_TIMER_12_BIT);
     ledcWrite(LEDC_CHANNEL_0, 2048);// 50%
-    Serial.printf("set freq: %d\n", freq);
+    log_d("set freq: %d", freq);
 }
 
 // 速度で周波数を指定
 void speedWrite(int16_t speed) {
     pfmWrite(speed * 6.472 + 5.070);
-    Serial.printf("set speed: %d\n", speed);
+    log_d("set speed: %d", speed);
 }
 
 void setup() {
     Serial.begin(115200);
-    Serial.println("setup");
+    Serial.println();
+    log_d("setup");
 
     WiFi.mode(WIFI_MODE_AP);
     WiFi.softAP(ssid, password);
@@ -56,7 +57,7 @@ void setup() {
 #elif defined FREQ
         pfmWrite(1000);
 #else
-        Serial.println("mode not set");
+        log_d("mode not set");
 #endif
 }
 
@@ -70,13 +71,13 @@ void loop() {
         uint32_t freq = str.toInt();
         if (freq == 0) {
             digitalWrite(pin, LOW);
-            Serial.println("set Low");
+            log_d("set Low");
         }
         else{
             prmWrite(freq);
         }
 #else
-        Serial.println("input: " + str);
+        log_d("input: %s", str.c_str());
 #endif
     }
     delay(5);
