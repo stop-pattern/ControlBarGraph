@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <WiFi.h>
 #include <ESPmDNS.h>
-#include <WebServer.h>
+#include <ESPAsyncWebServer.h>
 #include <driver/ledc.h>
 #include "FS.h"
 #include "SPIFFS.h"
@@ -15,6 +15,8 @@
 // - FREQ
 //    周波数を直接指定
 
+# define FORMAT_SPIFFS_IF_FAILED true
+
 constexpr uint8_t pin = 27;
 const char* ssid = "BarGraqh";
 const char* password = "password";
@@ -23,7 +25,7 @@ const IPAddress subnet(255, 255, 255, 0);
 const char* hostname = "esp32";
 
 #ifdef SERVER
-WebServer server(80);
+AsyncWebServer server(80);
 #endif
 
 // ledcでPFM
@@ -40,10 +42,11 @@ void speedWrite(int16_t speed) {
 }
 
 // 404
-void handleNotFound() {
-    if (! handleFileRead(server.uri())) {
-        log_e("404 not found");
-        server.send(404, "text/plain", "File not found");
+void notFound(AsyncWebServerRequest *request){
+    if (request->method() == HTTP_OPTIONS){
+        request->send(200);
+    }else{
+        request->send(404, "text/plain", "File not found");
     }
 }
 
@@ -75,15 +78,22 @@ void setup() {
 #if defined SERVER
     if(!SPIFFS.begin(FORMAT_SPIFFS_IF_FAILED)){
         log_e("SPIFFS Mount Failed");
-        esp_reboot();
+        esp_restart();
     }
     SPIFFS.begin();
     server.serveStatic("/favicon.ico", SPIFFS, "/favicon.ico"); //配置せずdefault
     server.serveStatic("/Chart.min.js", SPIFFS, "/Chart.min.js");
     server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        request->send(SPIFFS, "/index.html", String(), false, processor);
+        request->send(SPIFFS, "/index.html", String(), false);
     });
-    server.onNotFound(handleNotFound);
+    // server.on("/frequency", HTTP_GET, [](AsyncWebServerRequest *request){
+    //     request->send_P(200, "text/plain", getFrequency().c_str());
+    // });
+    // server.on("/speed", HTTP_GET, [](AsyncWebServerRequest *request){
+    //     request->send_P(200, "text/plain", getSpeed).c_str());
+    // });
+    server.serveStatic("/", SPIFFS, "/www/").setDefaultFile("index.html");
+    server.onNotFound(notFound);
     server.begin();
     MDNS.addService("server", "tcp", 80);
 #elif defined SPEED
@@ -97,9 +107,7 @@ void setup() {
 }
 
 void loop() {
-#if defined SERVER
-    server.handleClient();
-#else
+#if not defined SERVER
     if(Serial.available()){
         String str = Serial.readStringUntil('\n');
 #if defined SPEED
