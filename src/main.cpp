@@ -56,6 +56,15 @@ void notFound(AsyncWebServerRequest *request){
     }
 }
 
+void manual(){
+    if (digitalRead(pin_btn)) {
+        digitalWrite(pin_ledR, HIGH);
+    }else {
+        digitalWrite(pin_ledR, LOW);
+    }
+    ledcWrite(LEDC_CHANNEL_1, analogRead(pin_ain) >= 4096 ? 4095 : analogRead(pin_ain));
+}
+
 void setup() {
     // pin
     pinMode(pin_ain, INPUT);
@@ -115,6 +124,9 @@ void setup() {
 #else
     log_d("mode not set");
 #endif
+    ledcSetup(LEDC_CHANNEL_1, 1000, LEDC_TIMER_12_BIT);
+    ledcAttachPin(pin_ledG, LEDC_CHANNEL_1);
+    ledcWrite(LEDC_CHANNEL_1, 0);
     log_d("setup end");
 }
 
@@ -138,14 +150,7 @@ void loop() {
 #endif
     }
 #endif
-    Serial.println(analogRead(pin_ain));
-    if (digitalRead(pin_btn)) {
-        digitalWrite(pin_ledG, HIGH);
-        digitalWrite(pin_ledR, LOW);
-    }else {
-        digitalWrite(pin_ledG, LOW);
-        digitalWrite(pin_ledR, HIGH);
-    }
-    
+    manual();
+
     delay(100);
 }
