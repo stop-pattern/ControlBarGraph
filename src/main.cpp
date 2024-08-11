@@ -64,6 +64,8 @@ void manual(){
     }
     uint16_t duty = ~analogRead(pin_ain) & 0x0fff;
     ledcWrite(LEDC_CHANNEL_1, duty);
+    uint8_t speed = duty * 180 / 4096;
+    speedWrite(speed);
 }
 
 void setup() {
