@@ -17,7 +17,13 @@
 
 # define FORMAT_SPIFFS_IF_FAILED true
 
-constexpr uint8_t pin = 27;
+constexpr uint8_t pin_ain = 39;     // 可変抵抗
+constexpr uint8_t pin_ledR = 26;    // LED緑
+constexpr uint8_t pin_ledG = 25;    // LED赤
+constexpr uint8_t pin_btn = 13;     // タクトスイッチ
+constexpr uint8_t pin_out = 4;      // PFM出力
+// constexpr uint8_t pin_out = 2;      // 試作時出力
+
 const char* ssid = "BarGraqh";
 const char* password = "password";
 const IPAddress ip(192, 168, 0, 1);
@@ -51,6 +57,13 @@ void notFound(AsyncWebServerRequest *request){
 }
 
 void setup() {
+    // pin
+    pinMode(pin_ain, INPUT);
+    pinMode(pin_btn, INPUT_PULLDOWN);
+    pinMode(pin_ledG, OUTPUT);
+    pinMode(pin_ledR, OUTPUT);
+    pinMode(pin_out, OUTPUT);
+
     // serial
     Serial.begin(115200);
     Serial.println();
@@ -70,8 +83,7 @@ void setup() {
     log_d("mdns end");
 
     // output
-    pinMode(pin, OUTPUT);
-    ledcAttachPin(pin, LEDC_CHANNEL_0);
+    ledcAttachPin(pin_out, LEDC_CHANNEL_0);
     log_d("output end");
 
     // mode options
@@ -126,5 +138,14 @@ void loop() {
 #endif
     }
 #endif
-    delay(5);
+    Serial.println(analogRead(pin_ain));
+    if (digitalRead(pin_btn)) {
+        digitalWrite(pin_ledG, HIGH);
+        digitalWrite(pin_ledR, LOW);
+    }else {
+        digitalWrite(pin_ledG, LOW);
+        digitalWrite(pin_ledR, HIGH);
+    }
+    
+    delay(100);
 }
