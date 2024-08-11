@@ -62,7 +62,8 @@ void manual(){
     }else {
         digitalWrite(pin_ledR, LOW);
     }
-    ledcWrite(LEDC_CHANNEL_1, analogRead(pin_ain) >= 4096 ? 4095 : analogRead(pin_ain));
+    uint16_t duty = ~analogRead(pin_ain) & 0x0fff;
+    ledcWrite(LEDC_CHANNEL_1, duty);
 }
 
 void setup() {
