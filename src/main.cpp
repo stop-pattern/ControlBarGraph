@@ -7,7 +7,7 @@
 #include "SPIFFS.h"
 
 // mode select
-#define SERVER
+//#define SERVER
 // - SERVER
 //    サーバーから表示する速度を受け周波数を計算して出力
 // - SPEED
@@ -34,6 +34,10 @@ const char* hostname = "esp32";
 AsyncWebServer server(80);
 #endif
 
+bool isServerEnable = true;
+volatile ulong preTime = 0;
+volatile bool intrStatus = false;
+
 // ledcでPFM
 void pfmWrite(uint32_t freq) {
     ledcSetup(LEDC_CHANNEL_0, freq, LEDC_TIMER_12_BIT);
@@ -57,15 +61,19 @@ void notFound(AsyncWebServerRequest *request){
 }
 
 void manual(){
-    if (digitalRead(pin_btn)) {
-        digitalWrite(pin_ledR, HIGH);
-    }else {
-        digitalWrite(pin_ledR, LOW);
-    }
     uint16_t duty = ~analogRead(pin_ain) & 0x0fff;
-    ledcWrite(LEDC_CHANNEL_1, duty);
+    // ledcWrite(LEDC_CHANNEL_1, duty);
     uint8_t speed = duty * 180 / 4096;
     speedWrite(speed);
+}
+
+// 割り込み処理
+void pinChanged() {
+    // チャタリング除去
+    if (millis() - preTime < 10) {
+        return;
+    }
+    intrStatus = true;
 }
 
 void setup() {
@@ -93,6 +101,9 @@ void setup() {
         delay(10);
     }
     log_d("mdns end");
+
+    // input
+    attachInterrupt(digitalPinToInterrupt(pin_btn), pinChanged, RISING);
 
     // output
     ledcAttachPin(pin_out, LEDC_CHANNEL_0);
@@ -127,9 +138,11 @@ void setup() {
 #else
     log_d("mode not set");
 #endif
-    ledcSetup(LEDC_CHANNEL_1, 1000, LEDC_TIMER_12_BIT);
-    ledcAttachPin(pin_ledG, LEDC_CHANNEL_1);
-    ledcWrite(LEDC_CHANNEL_1, 0);
+    // ledcSetup(LEDC_CHANNEL_1, 1000, LEDC_TIMER_12_BIT);
+    // ledcAttachPin(pin_ledG, LEDC_CHANNEL_1);
+    // ledcWrite(LEDC_CHANNEL_1, 0);
+    digitalWrite(pin_ledG, HIGH);
+    digitalWrite(pin_ledR, isServerEnable);
     log_d("setup end");
 }
 
@@ -153,7 +166,31 @@ void loop() {
 #endif
     }
 #endif
-    manual();
+    if (intrStatus) {
+        isServerEnable = !isServerEnable;
+        intrStatus = false;
+    }
+    digitalWrite(pin_ledR, isServerEnable);
+
+    if (!isServerEnable) {
+        manual();
+    }
+    else {
+        speedWrite(180);
+        ulong temp = millis();
+        while (millis() - temp >= 37500) {
+            if (intrStatus) return;
+            delay(1);
+        }
+        delay(1000);
+        speedWrite(0);
+        temp = millis();
+        while (millis() - temp >= 37500) {
+            if (intrStatus) return;
+            delay(1);
+        }
+        delay(1000);
+    }
 
     delay(100);
 }
