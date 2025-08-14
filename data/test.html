@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>GPIO</title>
+    <style>
+        svg {
+            width: 500;
+            height: 500;
+        }
+        .switch {
+            fill: gray;
+            cursor: pointer;
+        }
+        .red {
+            fill: red;
+        }
+        .green {
+            fill: green;
+        }
+        #needle {
+            transform-origin: 250 375;
+            transition: transform linear;
+        }
+    </style>
+</head>
+
+<body>
+    <h2>ESP32 GPIO Control</h2>
+    <!-- <img src="images/test.svg"> -->
+    <svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" fill="white" viewBox="0 0 500 500">
+        <title>test</title>
+        <desc>Test SVG with circles</desc>
+        <rect x="0" y="0" width="500" height="500" fill="lightgray" />
+        <!-- 赤円 -->
+        <circle id="signal_red" class="switch red" cx="125" cy="125" r="75" fill="red" />
+        <!-- 緑円 -->
+        <circle id="signal_green" class="switch green" cx="385" cy="125" r="75" fill="green" />
+        <!-- 線 -->
+        <!-- <line id="needle" x1="250" y1="200" x2="250" y2="400" stroke-width="3" stroke="black" transform="rotate(120, 250 400)" /> -->
+        <!-- 針 -->
+        <path id="needle" d="M 250 210 l 10 10 v 200 h -20 v -200 l 10 -10 Z" fill="whitesmoke" transform="rotate(0, 250 375)" />
+        <circle cx="250" cy="375" r="25" fill="whitesmoke" />
+        <circle cx="250" cy="375" r="5" fill="gray" />
+        <!-- 文字 -->
+        <text id="speedText" x="250" y="450" text-anchor="middle" font-size="24" fill="black">0</text>
+    </svg>
+    <input type="range" id="slider" min="0" max="120" value="0"/>
+
+
+    <script>
+        const ws = new WebSocket(`ws://${location.host}/ws`);
+        const slider = document.getElementById("slider");
+        const needle = document.getElementById("needle");
+        const speedText = document.getElementById("speedText");
+
+        const colors = Object.freeze({
+            signal_red: "red",
+            signal_green: "green"
+        });
+
+        // 円をクリック → GPIO切替リクエスト送信
+        document.querySelectorAll(".switch").forEach(el => {
+            el.addEventListener("click", () => {
+                const id = el.id;
+                ws.send(JSON.stringify({ type: "toggle", id: id }));
+            });
+        });
+
+        // // メータークリック → 針回転
+        // document.querySelector("svg").addEventListener("click", (e) => {
+        //   const rect = e.target.closest("svg").getBoundingClientRect();
+        //   const cx = rect.left + rect.width / 2;
+        //   const cy = rect.top + rect.height / 2;
+        //   const dx = e.clientX - cx;
+        //   const dy = e.clientY - cy;
+        //   const angle = Math.atan2(dy, dx) * 180 / Math.PI + 90;
+        //   document.getElementById("needle").style.transform = `rotate(${angle}deg)`;
+        // });
+
+        slider.addEventListener("input", () => {
+            const speed = parseInt(slider.value);
+            ws.send(JSON.stringify({ type: "speed", value: speed }));
+        });
+
+        // GPIO状態の更新を受信
+        ws.onmessage = (event) => {
+            const data = JSON.parse(event.data);
+            if (data.type === "state") {
+                for (const id in data.states) {
+                    const el = document.getElementById(id);
+                    if (el) {
+                        el.classList.remove("red", "green");
+                        if (data.states[id]) {
+                            el.classList.add(id);
+                        }
+                        // el.classList.add(data.states[id] ? id : "off");
+                    }
+                }
+
+                const speed = data.speed || 0;
+                slider.value = speed;
+                speedText.textContent = speed;
+                // 角度は -120°〜120° の範囲で対応させる
+                const angle = (speed / 120) * 240 - 120;
+                needle.setAttribute("transform", `rotate(${angle} 250 375)`);
+            }
+        };
+    </script>
+</body>
+
+</html>

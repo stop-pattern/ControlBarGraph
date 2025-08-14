@@ -1,0 +1,18 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="500" height="500" fill="white" viewBox="0 0 500 500">
+  <title>test</title>
+  <desc>Test SVG with circles</desc>
+  <rect x="0" y="0" width="500" height="500" fill="lightgray" />
+  <!-- 赤円 -->
+  <circle id="red" class="switch red" cx="125" cy="125" r="75" fill="red" />
+  <!-- 緑円 -->
+  <circle id="green" class="switch green" cx="385" cy="125" r="75" fill="green" />
+  <!-- 線 -->
+  <!-- <line id="needle" x1="250" y1="200" x2="250" y2="400" stroke-width="3" stroke="black" transform="rotate(120, 250 400)" /> -->
+  <!-- 針 -->
+  <path id="needle" d="M 250 210 l 10 10 v 200 h -20 v -200 l 10 -10 Z" fill="whitesmoke"
+    transform="rotate(0, 250 375)" />
+  <circle cx="250" cy="375" r="25" fill="whitesmoke" />
+  <circle cx="250" cy="375" r="5" fill="gray" />
+  <!-- 文字 -->
+  <text id="speedText" x="250" y="450" text-anchor="middle" font-size="24" fill="black">0</text>
+</svg>

@@ -1,0 +1,33 @@
+
+<svg width="283" height="216" viewBox="0 0 283 216" xmlns="http://www.w3.org/2000/svg">
+  <!-- 背景 -->
+  <rect width="100%" height="100%" fill="black" />
+
+  <!-- 赤色速度バー -->
+  <g id="speed_bar">
+    <!-- 速度20〜180（2刻み）を例示（座標は仮） -->
+    <!-- 実際の画像に合わせて位置調整が必要 -->
+    <!-- 左下から右上にカーブ状に描画 -->
+    <rect id="S020" x="30" y="150" width="6" height="6" fill="red" />
+    <rect id="S022" x="36" y="144" width="6" height="6" fill="red" />
+    <rect id="S024" x="42" y="138" width="6" height="6" fill="red" />
+    <!-- ... 中略（必要な分追加） -->
+    <rect id="S178" x="240" y="48" width="6" height="6" fill="red" />
+    <rect id="S180" x="246" y="48" width="6" height="6" fill="red" />
+  </g>
+
+  <!-- 単位 -->
+  <text x="200" y="80" fill="yellow" font-size="18" font-family="sans-serif">km/h</text>
+
+  <!-- 7セグメント風LED（3桁） -->
+  <g id="led_digits" transform="translate(90, 130)" fill="red">
+    <!-- 各桁に対応するプレースホルダ -->
+    <rect x="0" y="0" width="20" height="30" />
+    <rect x="25" y="0" width="20" height="30" />
+    <rect x="50" y="0" width="20" height="30" />
+    <!-- 数字の中身はJS等で動的に変更 -->
+  </g>
+
+  <!-- 表示変更用のテキスト（代替案） -->
+  <!-- <text id="speed_display" x="95" y="155" fill="red" font-family="monospace" font-size="32">180</text> -->
+</svg>
